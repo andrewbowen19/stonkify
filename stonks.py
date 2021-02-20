@@ -1,4 +1,5 @@
 # Stock data visualization dashboard
+# Awesome-quent list of packages for fin data: https://github.com/wilsonfreitas/awesome-quant#data-sources
 
 import os
 import pandas as pd
@@ -13,6 +14,8 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 import dash_table
+# import sklearn
+from scipy import optimize
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
@@ -29,6 +32,10 @@ ddf = web.DataReader(default_symbol, 'yahoo', start, end)
 
 print(ddf)#.head())
 f = px.line(ddf, x=ddf.index, y='Adj Close', title=default_symbol)
+
+def test_func(x, dist, amp, omega, phi):
+	# For a sinusoidal model: https://towardsdatascience.com/fitting-cosine-sine-functions-with-machine-learning-in-python-610605d9b057
+    return dist + amp * np.cos(omega * x + phi)
 
 # Creating app layout
 app.layout = html.Div(children=[
@@ -60,15 +67,18 @@ app.layout = html.Div(children=[
 			# Start & end date selection
 			html.Div([
 
-				dcc.DatePickerRange(
-					id='date-selector',
-					min_date_allowed=dt.date(1985,1,1),
-					max_date_allowed=dt.datetime.now().date(),
-					start_date=dt.datetime(2020,1,1),
-					end_date=dt.datetime.now().date()
-					)
+					dcc.DatePickerRange(
+						id='date-selector',
+						min_date_allowed=dt.date(1985,1,1),
+						max_date_allowed=dt.datetime.now().date(),
+						start_date=dt.datetime(2020,1,1),
+						end_date=dt.datetime.now().date()
+						)
 
-					])#, className='two columns')#,
+					])
+			
+
+
 			]),
 
 	# Stock graph
@@ -77,7 +87,18 @@ app.layout = html.Div(children=[
 			id='stock-graph',
 			figure=f
 			)
-			])
+			]),
+
+	# User can select model
+	html.Div([
+			dcc.Checklist(
+				id='model-selector',
+				options=[{'label': 'Show trend model?', 'value': 'True'}],
+				value=[],
+				labelStyle={'display': 'inline-block'}
+				)
+
+			], className='two columns')
 
 ])
 
@@ -87,10 +108,11 @@ app.layout = html.Div(children=[
 	[Input('lookup-stock', 'value'),
 	 Input('price-selection', 'value'),
 	 Input('date-selector', 'start_date'),
-	 Input('date-selector', 'end_date')]
+	 Input('date-selector', 'end_date'),
+	 Input('model-selector', 'value')]
 	)
 
-def update_stock_graph(value, price, start_date, end_date):
+def update_stock_graph(value, price, start_date, end_date, model):
 	'''Lookup new stock prices with user input'''
 	df = web.DataReader(value, 'yahoo', start_date, end_date)
 
@@ -99,6 +121,9 @@ def update_stock_graph(value, price, start_date, end_date):
 
 	# Creating figure
 	f = px.line(df, x=df.index, y=price, title=value)
+
+	if model=='True':
+		print('Generating model...')
 
 	return f
 
