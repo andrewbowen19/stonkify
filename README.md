@@ -1,2 +1,8 @@
-# stonkify
-Stock data visualization applet
+# Stonkify
+
+Sandbox python web app for stock data visualization
+
+
+
+
+
