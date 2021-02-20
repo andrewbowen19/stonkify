@@ -39,24 +39,23 @@ app.layout = html.Div(children=[
 	html.Div(className='row', children=[
 			# Symbol lookup
 			html.Div([
-			dcc.Input(
-			id='lookup-stock',
-			type='text',
-			placeholder="Search Stock Symbol",
-			value='AAPL',
-			debounce=True
-			)
-			], className='two columns'),
+					dcc.Input(
+					id='lookup-stock',
+					type='text',
+					placeholder="Search Stock Symbol",
+					value='AAPL',
+					debounce=True
+					)
+					], className='two columns'),
 
 			# Data desired (price, open, close, etc.)
 			html.Div([
-			dcc.Dropdown(
-				id='price-selection',
-				options=[{'label': x, 'value': x} for x in ddf.columns],
-				value='Adj Close'
-
-				)
-			], className='two columns'),
+					dcc.Dropdown(
+						id='price-selection',
+						options=[{'label': x, 'value': x} for x in ddf.columns],
+						value='Adj Close'
+						)
+					], className='two columns'),
 
 			# Start & end date selection
 			html.Div([
@@ -69,10 +68,9 @@ app.layout = html.Div(children=[
 					end_date=dt.datetime.now().date()
 					)
 
-				], className='two columns')#,
+					])#, className='two columns')#,
+			]),
 
-			
-		]),
 	# Stock graph
 	html.Div([
 			dcc.Graph(
@@ -81,10 +79,9 @@ app.layout = html.Div(children=[
 			)
 			])
 
-
 ])
 
-
+# Updating graph based on user input values
 @app.callback(
 	Output('stock-graph', 'figure'),
 	[Input('lookup-stock', 'value'),
@@ -106,6 +103,6 @@ def update_stock_graph(value, price, start_date, end_date):
 	return f
 
 
-
+# Run the app
 if __name__ == "__main__":
 	app.run_server(debug=True)
