@@ -125,7 +125,6 @@ def update_stock_graph(value, price, start_date, end_date, model):
 
 	return f
 
-
 # Run the app
 if __name__ == "__main__":
 	app.run_server(debug=True)
