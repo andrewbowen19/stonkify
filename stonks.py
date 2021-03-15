@@ -77,8 +77,6 @@ app.layout = html.Div(children=[
 
 					])
 			
-
-
 			]),
 
 	# Stock graph
