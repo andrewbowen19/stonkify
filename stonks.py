@@ -96,25 +96,37 @@ app.layout = html.Div(children=[
 				labelStyle={'display': 'inline-block'}
 				)
 
-			], className='two columns')
+			], className='two columns'),
+   
+#   Table with ind stock data
+   html.Div([
+            dash_table.DataTable(
+            id='stock-table',
+            columns=[{"name": i, "id": i} for i in ddf.columns],
+#            data=df.to_dict('records')
+            )
+            ])
 
 ])
 
 # Updating graph based on user input values
 @app.callback(
 	Output('stock-graph', 'figure'),
+    Output('stock-table', 'data'),
 	[Input('lookup-stock', 'value'),
 	 Input('price-selection', 'value'),
 	 Input('date-selector', 'start_date'),
 	 Input('date-selector', 'end_date'),
 	 Input('model-selector', 'value')]
 	)
-
-def update_stock_graph(value, price, start_date, end_date, model):
-	'''Lookup new stock prices with user input'''
+def update_stock_data(value, price, start_date, end_date, model):
+	'''
+    Lookup new stock prices with user input
+    Updates both stock graph AND data table below based on user input
+    '''
 	df = web.DataReader(value, 'yahoo', start_date, end_date)
 
-	print(f'New stock searched {value}')
+	print(f'New stock searched: {value}')
 	print(df.head())
 
 	# Creating figure
@@ -123,7 +135,8 @@ def update_stock_graph(value, price, start_date, end_date, model):
 	if model=='True':
 		print('Generating model...')
 
-	return f
+	return [f, df.head(n=10).to_dict('records')]
+    
 
 # Run the app
 if __name__ == "__main__":
