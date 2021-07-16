@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import json
 import os
+from urllib.parse import urlencode
 
 # Get free finnhub key from here: https://finnhub.io/dashboard
 finnhub_key = os.environ['FINNHUB_KEY']
@@ -45,14 +46,38 @@ def get_company_news(symbol, start, end):
     
     print(r.json())
     
+def finnhub_api_request(params, news_type='news?'):
+    '''
+    Flexible API function that can request any dataset from Finnhub
+    params: dict, with parameter values
     
+    { API param : value }
+    Both param & value should be a string
+    news_type: str, with general Finnhub news/sentiment type
+    '''
+    print('As you command, sir.')
+    
+#    Setting up full request string
+    request_str = 'https://finnhub.io/api/v1/'
+    news_type
+#    Need to reconfigure this dict key:val pairings into an API string
+#    param_str = str([p + '=' +  v + '/' for p, v in zip(params.keys(), params.values())])
+    param_url = urlencode(params)
+    
+    full_str = request_str + news_type + param_url +   '&token=' + finnhub_key
+    print(full_str)
+    r = requests.get(full_str)
+    
+    print(r.json())
     
 
 
 if __name__ == "__main__":
-    company_news_sentiment('AMZN')
+#    company_news_sentiment('AMZN')
 #    get_company_news('AAPL', '2021-01-04', '2021-07-13')
-    market_news()
+#    market_news()
+    test_params = {'category': 'general'}
+    finnhub_api_request(test_params, 'news?')
 
 
 # TODO:
