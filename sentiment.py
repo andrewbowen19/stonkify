@@ -59,9 +59,8 @@ def finnhub_api_request(params, news_type='news?'):
     
 #    Setting up full request string
     request_str = 'https://finnhub.io/api/v1/'
-    news_type
+
 #    Need to reconfigure this dict key:val pairings into an API string
-#    param_str = str([p + '=' +  v + '/' for p, v in zip(params.keys(), params.values())])
     param_url = urlencode(params)
     
     full_str = request_str + news_type + param_url +   '&token=' + finnhub_key
