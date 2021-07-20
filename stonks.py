@@ -30,23 +30,6 @@ server = app.server # server needed for heroku deploy
 finnhub_key = os.environ['FINNHUB_KEY']
 finnhub_client = finnhub.Client(api_key=finnhub_key)
 
-print('Getting stock data...')
-default_symbol = 'AAPL'
-
-# These need to be unix timestamps
-start_me = dt.datetime(2000, 1, 1)
-end_me = dt.datetime.now().date()
-
-# Default dataframe
-ddf = pd.DataFrame(finnhub_client.stock_candles('AAPL', 'D', 1590988249, 1591852249))
-
-#Resetting DF columns
-new_cols = ['Close', 'High', 'Low', 'Open', 'Status', 'Timestamp', 'Volume']
-ddf.columns = new_cols
-
-print('Default Stock data:\n', ddf)
-f = px.line(ddf, x=ddf.index, y='Close', title=default_symbol)
-
 def test_func(x, dist, amp, omega, phi):
     # For a sinusoidal model: https://towardsdatascience.com/fitting-cosine-sine-functions-with-machine-learning-in-python-610605d9b057
     return dist + amp * np.cos(omega * x + phi)
@@ -61,6 +44,32 @@ def convert_to_unix(date_str):
     unix = int(parser.parse(date_str).timestamp())
 
     return unix
+
+
+
+print('Getting stock data...')
+default_symbol = 'AAPL'
+
+# UNIX timestamps of default start/end dates
+default_start = dt.datetime(2020, 1, 1)
+default_end = dt.datetime.now().date().strftime('%Y-%m-%d ')
+start_me = int(parser.parse('2020-01-01').timestamp())
+end_me = int(parser.parse(default_end).timestamp())
+
+# Default dataframe
+
+ddf = pd.DataFrame(finnhub_client.stock_candles('AAPL', 'D', start_me, end_me))
+print('FOO', ddf)
+ddf['t'] = [dt.datetime.fromtimestamp(t).strftime('%Y-%m-%d') for t in ddf['t']]
+#Resetting DF columns
+new_cols = ['Close', 'High', 'Low', 'Open', 'Status', 'Date', 'Volume']
+ddf.columns = new_cols
+
+ddf = ddf.drop(['Status'], axis=1)
+
+print('Default Stock data:\n', ddf)
+f = px.line(ddf, x=ddf.index, y='Close', title=default_symbol)
+
 
 #############################################
 # Creating app layout
@@ -105,7 +114,7 @@ app.layout = html.Div(children=[
             
             ]),
 
-    # Stock graph
+    # Stock graph - main view of dashboard
     html.Div([
             dcc.Graph(
             id='stock-graph',
@@ -157,6 +166,10 @@ def update_stock_data(value, price, start_date, end_date, model):
     
     end = convert_to_unix(end_date)
     df = pd.DataFrame(finnhub_client.stock_candles(value,'D', start, end))
+    
+#    Converting timestamp for readability and changing column names
+    df['t'] = [dt.datetime.fromtimestamp(t).strftime('%Y-%m-%d') for t in df['t']]
+    df.drop(['s'], axis=1)
     df.columns = new_cols
 
     print(f'New stock searched: {value}')
@@ -168,11 +181,13 @@ def update_stock_data(value, price, start_date, end_date, model):
     if model=='True':
         print('Generating model...')
 
-    return [f, df.head(n=10).to_dict('records')]
+    return [f, df[['Close', 'High', 'Low', 'Open','Date', 'Volume']].head(n=10).to_dict('records')]
 
 # Run the app
 if __name__ == "__main__":
+    print(dt.datetime.fromtimestamp(15705789).strftime('%Y-%m-%d %H:%M:%S'))
     app.run_server(debug=True)
+    
 
 # TODO:
 
