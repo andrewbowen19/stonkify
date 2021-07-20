@@ -6,7 +6,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import pandas_datareader as web
 import finnhub
-from datetime import timezone
+from dateutil import parser
 import datetime as dt
 
 # Dash imports
@@ -34,37 +34,32 @@ print('Getting stock data...')
 default_symbol = 'AAPL'
 
 # These need to be unix timestamps
-start = dt.datetime(2000, 1, 1)
-end = dt.datetime.now().date()
+start_me = dt.datetime(2000, 1, 1)
+end_me = dt.datetime.now().date()
 
+# Default dataframe
+ddf = pd.DataFrame(finnhub_client.stock_candles('AAPL', 'D', 1590988249, 1591852249))
 
-res = finnhub_client.stock_candles('AAPL', 'D', 1590988249, 1591852249)
-
-ddf = pd.DataFrame(res)
+#Resetting DF columns
 new_cols = ['Close', 'High', 'Low', 'Open', 'Status', 'Timestamp', 'Volume']
 ddf.columns = new_cols
 
-
-# May need to use different API thatn pandas datareader - switch to finnhub API
-# Will also need to convert Finnhub API response to DF
-#ddf = web.DataReader(default_symbol, 'yahoo', start, end)
-
-
-
-
-print(ddf)#.head())
+print('Default Stock data:\n', ddf)
 f = px.line(ddf, x=ddf.index, y='Close', title=default_symbol)
 
 def test_func(x, dist, amp, omega, phi):
     # For a sinusoidal model: https://towardsdatascience.com/fitting-cosine-sine-functions-with-machine-learning-in-python-610605d9b057
     return dist + amp * np.cos(omega * x + phi)
 
-def convert_to_unix(date):
+def convert_to_unix(date_str):
     '''
-    Converts a datetime object to a UNIX timestamp (number)
+    Converts a ISO 8601 datetime string to a UNIX timestamp (number)
     date: datetime obj
+    
+    returns; unix timestamp in integer forma
     '''
-    unix = date.replace(tzinfo=timezone.utc).timestamp()
+    unix = int(parser.parse(date_str).timestamp())
+
     return unix
 
 #############################################
@@ -137,7 +132,6 @@ app.layout = html.Div(children=[
 #            data=df.to_dict('records')
             )
             ])
-
 ])
 
 # Updating graph based on user input values
@@ -163,6 +157,7 @@ def update_stock_data(value, price, start_date, end_date, model):
     
     end = convert_to_unix(end_date)
     df = pd.DataFrame(finnhub_client.stock_candles(value,'D', start, end))
+    df.columns = new_cols
 
     print(f'New stock searched: {value}')
     print(df.head())
@@ -174,17 +169,15 @@ def update_stock_data(value, price, start_date, end_date, model):
         print('Generating model...')
 
     return [f, df.head(n=10).to_dict('records')]
-    
 
 # Run the app
 if __name__ == "__main__":
     app.run_server(debug=True)
 
-
 # TODO:
 
 #    -Add symbol lookup (Check Finnhub's function: https://finnhub.io/docs/api/symbol-search)
-#    -
+#    -Clean up
 
 
 
